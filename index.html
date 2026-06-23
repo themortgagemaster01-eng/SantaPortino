@@ -363,7 +363,7 @@
         </div>
         <div class="field small">
           <label>HOA fees <span>/mo</span></label>
-          <div class="input-wrap sm"><span class="cur">$</span><input type="text" id="hoaMo" value="50" inputmode="numeric"></div>
+          <div class="input-wrap sm"><span class="cur">$</span><input type="text" id="hoaMo" value="0" inputmode="numeric"></div>
         </div>
 
       </div>
@@ -389,7 +389,7 @@
         <div class="row" id="rowPMI"><span class="dot" style="background:var(--pmi);color:var(--pmi)"></span><span class="name">PMI (mortgage insurance)</span><span class="val" id="pmiVal">$0</span></div>
         <div class="row"><span class="dot" style="background:var(--ins);color:var(--ins)"></span><span class="name">Homeowner&#39;s insurance</span><span class="val" id="insVal">$67</span></div>
         <div class="row"><span class="dot" style="background:var(--tax);color:var(--tax)"></span><span class="name">Property tax</span><span class="val" id="taxVal">$402</span></div>
-        <div class="row"><span class="dot" style="background:var(--hoa);color:var(--hoa)"></span><span class="name">HOA fees</span><span class="val" id="hoaVal">$50</span></div>
+        <div class="row"><span class="dot" style="background:var(--hoa);color:var(--hoa)"></span><span class="name">HOA fees</span><span class="val" id="hoaVal">$0</span></div>
       </div>
 
       <div class="pmi-note" id="pmiNote" style="display:none"></div>
@@ -437,7 +437,7 @@
     price:700000, down:140000,
     propValue:700000, loanAmt:560000,
     years:30, rate:6, dpMode:'dollar',
-    taxYr:12000, insYr:2100, hoaMo:50, credit:'excellent'
+    taxYr:12000, insYr:2100, hoaMo:0, credit:'excellent'
   };
 
   // PMI annual rate (% of loan) by LTV band and credit tier — estimates
@@ -502,7 +502,7 @@
       const dropPct=20;
       $('pmiNote').innerHTML='<b>PMI applies</b> at '+ltv.toFixed(1)+'% LTV (excellent credit, ~'+(pmiR*100).toFixed(2)+'%/yr). Drops off near '+dropPct+'% equity &mdash; reaching it removes about '+fmt(pmi)+'/mo.';
     } else {
-      $('rowPMI').classList.add('hidden');$('segPMI').style.display='none';
+      $('rowPMI').classList.remove('hidden');$('segPMI').style.display='none';
       $('pmiNote').style.display='none';
     }
 
