@@ -211,6 +211,33 @@
   .ib-btn{background:linear-gradient(135deg,var(--baby-deep),var(--baby-mid));border:none;color:#fff;
     font-family:'Sora',sans-serif;font-weight:700;font-size:13px;padding:9px 16px;border-radius:11px;cursor:pointer;white-space:nowrap}
   .ib-x{background:none;border:none;color:var(--grey);font-size:22px;line-height:1;cursor:pointer;padding:0 4px}
+  /* ADD-TO-HOMESCREEN MODAL */
+  .install-modal{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;padding:18px;
+    background:rgba(5,8,13,0.72);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+  .install-modal.show{display:flex}
+  .im-card{width:100%;max-width:400px;background:linear-gradient(165deg,rgba(18,28,44,0.97),rgba(10,16,26,0.98));
+    border:1px solid var(--line-bright);border-radius:24px;padding:26px 22px 20px;position:relative;
+    box-shadow:0 30px 80px rgba(0,0,0,0.6);animation:imPop .35s cubic-bezier(.2,.8,.3,1)}
+  @keyframes imPop{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
+  .im-x{position:absolute;top:11px;right:14px;background:none;border:none;color:var(--grey);font-size:26px;line-height:1;cursor:pointer}
+  .im-ico{width:54px;height:54px;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:2px auto 12px;
+    background:linear-gradient(135deg,var(--baby-deep),var(--baby-mid));box-shadow:0 8px 22px rgba(90,150,204,0.45)}
+  .im-ico svg{width:28px;height:28px;fill:#fff}
+  .im-title{font-family:'Sora',sans-serif;font-weight:800;font-size:19px;text-align:center;color:#fff;margin-bottom:5px}
+  .im-sub{text-align:center;font-size:13px;color:var(--grey-soft);margin-bottom:18px;line-height:1.45}
+  .im-steps{display:flex;flex-direction:column;gap:12px;margin-bottom:18px}
+  .im-step{display:flex;align-items:center;gap:12px}
+  .im-num{width:28px;height:28px;flex:none;border-radius:50%;background:rgba(140,188,230,0.16);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-weight:700;font-size:13px;color:var(--baby)}
+  .im-step span{font-size:14px;color:var(--grey-soft);line-height:1.4}
+  .im-step b{color:#fff;font-weight:600}
+  .im-glyph{display:inline-flex;vertical-align:-3px}
+  .im-glyph svg{width:16px;height:16px;fill:var(--baby)}
+  .im-btn{display:block;width:100%;text-align:center;background:linear-gradient(135deg,var(--baby-deep),var(--baby-mid));
+    border:none;color:#fff;font-family:'Sora',sans-serif;font-weight:700;font-size:15px;padding:13px;border-radius:14px;cursor:pointer;
+    box-shadow:0 8px 22px rgba(90,150,204,0.4)}
+  .im-btn.ghost{background:none;box-shadow:none;color:var(--grey-soft);font-weight:600;margin-top:4px;padding:10px}
+  @media print{.install-modal{display:none!important}}
   @media print{.install-banner{display:none!important}}
 
   /* SONYMA */
@@ -279,6 +306,17 @@
   <div class="ib-text"><b>Add to your phone:</b> <span id="ibHow">tap Share, then "Add to Home Screen"</span></div>
   <button class="ib-btn" id="ibInstall" style="display:none">Install</button>
   <button class="ib-x" id="ibClose" aria-label="Dismiss">&times;</button>
+</div>
+<div class="install-modal" id="installModal" role="dialog" aria-modal="true" aria-label="Add to Home Screen">
+  <div class="im-card">
+    <button class="im-x" id="imClose" aria-label="Close">&times;</button>
+    <div class="im-ico"><svg viewBox="0 0 24 24"><path d="M12 2a1 1 0 0 1 1 1v9.59l2.3-2.3a1 1 0 1 1 1.4 1.42l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.42l2.3 2.3V3a1 1 0 0 1 1-1zM5 16a1 1 0 0 1 1 1v2h12v-2a1 1 0 1 1 2 0v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1z"/></svg></div>
+    <div class="im-title">Add to your Home Screen</div>
+    <div class="im-sub" id="imSub">Keep this calculator one tap away — it opens like an app.</div>
+    <div class="im-steps" id="imSteps"></div>
+    <button class="im-btn" id="imInstall" style="display:none">Install app</button>
+    <button class="im-btn ghost" id="imGot">Got it</button>
+  </div>
 </div>
 <div class="stage">
 
@@ -606,6 +644,34 @@
     window.addEventListener('beforeinstallprompt',(e)=>{e.preventDefault();deferred=e;btn.style.display='';how.textContent='one tap to install this as an app';});
     btn.addEventListener('click',async()=>{if(deferred){deferred.prompt();await deferred.userChoice;deferred=null;banner.classList.add('hide');}});
     x.addEventListener('click',()=>{banner.classList.add('hide');localStorage.setItem('mjpInstallDismissed','1');});
+
+    /* First-open Add-to-Home-Screen guide */
+    const modal=document.getElementById('installModal');
+    const steps=document.getElementById('imSteps');
+    const imSub=document.getElementById('imSub');
+    const imInstall=document.getElementById('imInstall');
+    const shareGlyph='<span class="im-glyph"><svg viewBox="0 0 24 24"><path d="M12 3a1 1 0 0 1 .7.3l3 3a1 1 0 1 1-1.4 1.4L13 6.41V14a1 1 0 1 1-2 0V6.41L9.7 7.7A1 1 0 1 1 8.3 6.3l3-3A1 1 0 0 1 12 3zM6 10a1 1 0 0 1 1 1v8h10v-8a1 1 0 1 1 2 0v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1z"/></svg></span>';
+    const step=(n,html)=>'<div class="im-step"><div class="im-num">'+n+'</div><span>'+html+'</span></div>';
+    if(isIOS){
+      imSub.textContent='Keep this calculator one tap away \u2014 it opens like an app, no App Store needed.';
+      steps.innerHTML=step(1,'Tap the <b>Share</b> button '+shareGlyph+' at the bottom of Safari')+step(2,'Scroll down and tap <b>\u201CAdd to Home Screen\u201D</b>')+step(3,'Tap <b>Add</b> \u2014 done!');
+    } else if(isAndroid){
+      imSub.textContent='Keep this calculator one tap away \u2014 it opens like an app, no Play Store needed.';
+      steps.innerHTML=step(1,'Tap the <b>\u22EE</b> menu (top-right of Chrome)')+step(2,'Tap <b>\u201CAdd to Home screen\u201D</b> (or \u201CInstall app\u201D)')+step(3,'Tap <b>Add</b> \u2014 done!');
+    } else {
+      imSub.textContent='Open this page on your phone to add it to your home screen.';
+      steps.innerHTML=step(1,'Open this link in your <b>phone\u2019s browser</b>')+step(2,'iPhone: <b>Share</b> '+shareGlyph+' \u2192 <b>Add to Home Screen</b>')+step(3,'Android: <b>\u22EE</b> menu \u2192 <b>Add to Home screen</b>');
+    }
+    const showModal=()=>modal.classList.add('show');
+    const hideModal=()=>{modal.classList.remove('show');localStorage.setItem('mjpModalSeen','1');};
+    document.getElementById('imClose').addEventListener('click',hideModal);
+    document.getElementById('imGot').addEventListener('click',hideModal);
+    modal.addEventListener('click',(e)=>{if(e.target===modal)hideModal();});
+    const ibtext=document.querySelector('.ib-text');
+    if(ibtext){ibtext.style.cursor='pointer';ibtext.addEventListener('click',showModal);}
+    window.addEventListener('beforeinstallprompt',()=>{imInstall.style.display='';});
+    imInstall.addEventListener('click',async()=>{if(deferred){deferred.prompt();await deferred.userChoice;deferred=null;hideModal();banner.classList.add('hide');}});
+    if(!localStorage.getItem('mjpModalSeen')){setTimeout(showModal,650);}
   })();
 
   ['homeRange','downRange','propRange','loanRange','rateRange'].forEach(id=>fillRange($(id)));
